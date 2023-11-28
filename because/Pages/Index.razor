@@ -1,0 +1,14 @@
+﻿@page "/"
+
+@inject NavigationManager NavigationManager 
+
+@inject AuthService Auth
+@inject MauiInterop Maui
+
+@code{
+    protected override void OnInitialized()
+    {
+        Maui.HideLoader();
+        NavigationManager.NavigateTo("/signin", replace: true);
+    }
+}

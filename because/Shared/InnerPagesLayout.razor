@@ -1,0 +1,63 @@
+﻿@using System.ComponentModel
+
+@inherits LayoutComponentBase
+
+@implements IDisposable
+
+@inject NavigationManager NavigationManager
+
+@inject MauiInterop Maui
+@inject AppState AppState
+
+<div class="w-100 position-fixed p-3 mb-3 bg-white shadow-sm top-navbar">
+    <div class="hstack gap-3">
+        <i class="bx bx-sm @(Maui.IsAndroid ? "bx-left-arrow-alt" : "bxs-chevron-left")" @onclick="GoBack"></i>
+        <h3 class="m-0 w-100 @(Maui.IsIOS ? "text-center" : "text-start")">
+            @AppState.InnerPageTitle
+        </h3>
+        @*<i class="bx bx-user-circle bx-sm text-dark"></i>*@
+        @if (AppState.TabbarItems.Length > 0)
+        {
+            <label>
+                @foreach (var tabbarItem in AppState.TabbarItems)
+                {
+                    <i class="bx text-dark @tabbarItem.Icon" @onclick="@tabbarItem.OnTap" />
+                }
+            </label>
+        }
+    </div>
+</div>
+<div class="body-content">
+    @Body
+</div>
+
+@code{
+    protected override void OnInitialized()
+    {
+        AppState.PropertyChanged += OnAppStatePropertyChanged;
+    }
+
+    private void OnAppStatePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AppState.InnerPageTitle) || e.PropertyName == nameof(AppState.TabbarItems))
+            StateHasChanged();
+    }
+
+    private void GoBack() => NavigationManager.GoBack();
+
+    public void Dispose()
+    {
+        AppState.PropertyChanged -= OnAppStatePropertyChanged;
+    }
+}
+
+<style type="text/css" scoped>
+    .top-navbar {
+        height: var(--navbar-height);
+        z-index: 10;
+    }
+    .body-content {
+        padding-top: var(--navbar-height);
+        padding-bottom: calc(var(--navbar-height) + 20px);
+    }
+</style>

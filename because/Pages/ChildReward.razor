@@ -1,0 +1,107 @@
+﻿@page "/ChildReward"
+
+@layout ChildLayout
+
+@using Google.Cloud.Firestore
+
+@inject NavigationManager NavigationManager
+@inject MauiInterop Maui
+@inject AuthService Auth
+@inject RewardService RewardService
+
+  <span class= "centered-text top-0 position-fixed" style="font-family: 'Comic Sans MS'; color: white;  font-size: 25px; left: 50%; margin-top: 20px; transform: translateX(-50%);">Shop</span>
+<div class="position-fixed overflow-auto" style="height: 590px;">
+
+	<div class="end-0 top-0" style="border: none; right: 10px; background: none; cursor: pointer; position: fixed; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+		<img src="@ProfileImage" alt="" style="width: 60px; height: 60px; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); margin-right: 8px; margin-top: 10px">
+	</div>
+	<div style="align-items: center; margin-top: 10px; margin-bottom: 10px; color: black;">
+		<img src="/images/BeeBucks.png" alt="" style="width: 60px; height: 60px;  margin-top: -5px; margin-left: 5px;margin-right: 10px;">
+		<span style="font-size: 30px; margin-right: 20px;  margin-top: 20px;">@CurrentCoins</span>
+	</div>
+	@foreach (var reward in RewardList)
+	{
+		<div class="reward-box" style="background-color: @(reward.Status == "Active" ? "#A288E3" : "#EF8275"); border-radius: 10px; margin: 12px; width: 300px; height: 200px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+			<div style="align-items: center; margin-top: 10px; position: relative; color: black; font-size: 24px;">
+				@reward.Name
+			</div>
+			<img src="@reward.ImageString" alt="Reward Image" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-top: 10px;">
+			<div style="align-items: center; margin-top: 10px; margin-bottom: 10px; color: black;">
+				<img src="/images/BeeBucks.png" alt="" style="width: 40px; height: 40px; margin-right: 10px;  margin-top: -5px;">
+				<span style="font-size: 20px; margin-right: 20px;">@reward.Coins</span>
+				<button @onclick="() => UpdateRewardStatusAsync(reward.Name, reward.Status, reward.Coins, CurrentCoins)"
+						style="border-radius: 10px; border-color: black;  background-color: #8BF8FF; color: black; font-size: 16px;">
+					@(reward.Status == "Active" ? "Claim" : "Pending")
+				</button>
+			</div>
+		</div>
+	}
+</div>
+<button @onclick="() => NavBack()" class="text-left position-fixed top-0 start-0" style="border: none; background: none; cursor: pointer; position: fixed; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+	<img src="/images/bee_back_arrow.png" alt="" style="width: 70px; height: 70px;">
+</button>
+
+@code {
+	private string? ProfileImage;
+	private List<RewardModel> RewardList = new List<RewardModel>();
+	private int CurrentCoins;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadData();
+
+	}
+	private async Task LoadData()
+	{
+		CollectionReference collection = AuthService.Database.Collection("Users");
+
+		QuerySnapshot querySnapshot = await collection
+			.WhereEqualTo("Email", AuthService._currentUser.Email)
+			.WhereEqualTo("Name", AuthService._currentUser.Name)
+			.Limit(1)
+			.GetSnapshotAsync();
+
+		if (querySnapshot.Documents.Count > 0)
+		{
+			DocumentSnapshot documentSnapshot = querySnapshot.Documents[0];
+
+			if (documentSnapshot.TryGetValue("ProfilePicture", out object ProfilePicture))
+			{
+				ProfileImage = ProfilePicture?.ToString();
+			}
+			if (documentSnapshot.TryGetValue<int>("Coins", out int coins))
+			{
+				CurrentCoins = coins;
+			}
+		}
+		RewardList = await RewardService.GetRewardListAsync();
+	}
+
+	private async Task UpdateRewardStatusAsync(string rewardName, string currentStatus, int rewardCost, int childCoinAmount)
+	{
+		string updateStatus = "Active";
+		if (currentStatus == "Active")
+		{
+			updateStatus = "Pending";
+		}
+		int newCoinTotal = 0;
+
+		if(updateStatus == "Active")
+		{
+			newCoinTotal = childCoinAmount + rewardCost;
+		}
+		else if (childCoinAmount > rewardCost)
+		{
+			newCoinTotal = childCoinAmount - rewardCost;
+
+		}
+		await RewardService.UpdateRewardStatusAsync(rewardName, updateStatus, newCoinTotal);
+		await LoadData();
+		StateHasChanged();
+	}
+	private void NavBack()
+	{
+		NavigationManager.NavigateTo("/selectuser", replace: true);
+	}
+}
+

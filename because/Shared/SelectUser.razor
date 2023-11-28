@@ -1,0 +1,20 @@
+﻿@inherits LayoutComponentBase
+
+<div class="vh-100 100-vw p-3 d-flex flex-column justify-content-center align-items-center" style="background-color: beige; position: relative; margin-top: 0px;">
+	<div class="justify-content-start align-items-center position-fixed" style="top: 25%; z-index: 5;">
+		<img src="/images/TransparentCuteBee.png" class="position-relative" alt="bee" style="width: 140px; height: 140px;">
+	</div>
+	<div class="justify-content-start align-items-center position-fixed" style="z-index: 0;">
+		<img src="/images/backgroundBecause.png" class="position-relative" alt="cloud" style="height: 100vh; width: 100vw; object-fit: cover; z-index: 0;">
+	</div>
+	<div class="my-3" style="position: relative; z-index: 1; margin-bottom: 0px;">
+		@Body
+	</div>
+</div>
+
+<style type="text/css" scoped>
+	.logo {
+		height: 80px;
+		width: 120px;
+	}
+</style>

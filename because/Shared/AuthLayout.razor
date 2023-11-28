@@ -1,0 +1,43 @@
+﻿@inherits LayoutComponentBase
+
+<div class="vh-100 100-vw p-3 d-flex flex-column justify-content-start align-items-center " style="background-color: #FFD643; position: relative; overflow: auto;">
+    <div class="text-center mb-2">
+        <img class="mx-auto logo" src="/images/because_logo_without_background.png" alt="logo" style="margin-top: 50px;">
+    </div>
+    <div class="my-1" style="position: relative; z-index: 1; margin-top: 20px;">
+        @Body
+    </div>
+    <div class="d-flex justify-content-center align-items-center fixed-bottom" style="position: relative; z-index: 0;">
+        <img src="/images/TransparentCuteBee.png"  alt="bee" style="width: 140px; height: 140px; margin-top: 10px; margin-bottom: 25px;">
+    </div>
+</div>
+
+<style type="text/css" scoped>
+    .logo {
+        height: 200px;
+        width: 350px;
+    }
+
+    body {
+        margin: 0;
+    }
+</style>
+
+<script>
+    var appContainer = document.getElementById('app-container');
+
+    window.addEventListener('resize', function () {
+        updateBackgroundColor();
+    });
+
+    window.addEventListener('scroll', function () {
+        updateBackgroundColor();
+    });
+
+    function updateBackgroundColor() {
+        var isKeyboardOpen = (document.body.clientHeight < window.innerHeight);
+        appContainer.style.backgroundColor = isKeyboardOpen ? '#FFD643' : '';
+    }
+
+    updateBackgroundColor();
+</script>

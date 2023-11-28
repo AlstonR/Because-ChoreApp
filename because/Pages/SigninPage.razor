@@ -1,0 +1,54 @@
+﻿@page "/signin"
+@layout AuthLayout
+
+@inject NavigationManager NavigationManager
+@inject AuthService AuthService
+@inject MauiInterop Maui
+
+<EditForm Model="_model" OnValidSubmit="SigninAsync">
+	<DataAnnotationsValidator />
+		<div class="card-body text-center">
+			<div class="vstack text-start">
+				<div class="mb-3">
+                <InputText @bind-Value="_model.Email" placeholder="Enter Email" class="form-control less-rounded fs-6" />
+					<ValidationMessage For="() => _model.Email" />
+				</div>
+				<div class="mb-3">
+                <InputText @bind-Value="_model.Password" type="password" placeholder="Enter Password" class="form-control less-rounded fs-6" />
+					<ValidationMessage For="() => _model.Password" />
+				</div>
+				<button type="submit" class="btn btn-primary rounded-pill" style="background-color: #F99301; color: black;">Sign In</button>
+			</div>
+		</div>
+</EditForm>
+<p class=" text-center  mt-1 mb-1">New to Because? <NavLink href="/signup" style="color: #02198B;">Create Account</NavLink> </p>
+
+@code {
+    private SigninModel _model = new();
+
+    private async Task SigninAsync()
+    {
+        Maui.ShowLoader();
+        try
+        {
+            var result = await AuthService.SigninAsync(_model);
+            if (result.IsSuccess)
+            {
+                NavigationManager.NavigateTo("/selectuser", replace: true);
+            }
+            else
+            {
+                await Maui.ShowErrorAlertAsync(result.Error ?? "Error in signining in");
+            }
+        }
+        catch (Exception ex)
+        {
+            await Maui.ShowErrorAlertAsync(ex.Message);
+        }
+        finally
+        {
+            Maui.HideLoader();
+        }
+    }
+ }
+

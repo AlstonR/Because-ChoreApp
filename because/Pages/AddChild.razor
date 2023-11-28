@@ -1,0 +1,74 @@
+﻿@page "/AddChild"
+
+@layout AddLayout
+
+@inject NavigationManager NavigationManager
+@inject ChildService ChildService
+@inject MauiInterop Maui
+<span class= "centered-text top-0 position-fixed" style="font-family: 'Comic Sans MS'; color: white;  font-size: 25px; left: 50%; margin-top: 20px; transform: translateX(-50%);">Add Child</span>
+<EditForm Model="child" OnSubmit="AddChildAsync">
+	<div class="card-body text-center">
+
+		<div class="vstack text-start">
+			<div class="mb-3">
+				<label class="form-label">Child Name</label>
+				<InputText @bind-Value="child.Name" placeholder="Enter Name" class="form-control less-rounded fs-6"  />
+			</div>
+
+			<div class="mb-3">
+				<label class="form-label">Profile Picture</label>
+				<InputFile OnChange="OnInputFileChange" />
+			</div>
+
+			<button type="submit" class="btn btn-primary rounded-pill" style="border-color:#A288E3; background-color: #A288E3; color: beige;">Add Child</button>
+		</div>
+	</div>
+</EditForm>
+<button @onclick="() => NavBack()" class="text-left position-fixed top-0 start-0" style="border: none; background: none; cursor: pointer; position: fixed; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+	<img src="/images/bee_back_arrow.png" alt="" style="width: 70px; height: 70px;">
+</button>
+
+@code {
+	private ChildModel child = new();
+
+	private async Task AddChildAsync()
+	{
+		Maui.ShowLoader();
+		try
+		{
+			var result = await ChildService.AddChildAsync(child);
+			if (result.IsSuccess)
+			{
+				NavigationManager.NavigateTo("/selectuser", replace: true);
+			}
+			else
+			{
+				await Maui.ShowErrorAlertAsync(result.Error ?? "Error in signining up");
+			}
+		}
+		catch (Exception ex)
+		{
+			await Maui.ShowErrorAlertAsync(ex.Message);
+
+		}
+		finally
+		{
+			Maui.HideLoader();
+		}
+	}
+
+	private void OnInputFileChange(InputFileChangeEventArgs e)
+	{
+		var files = e.GetMultipleFiles();
+		var selectedFile = files.FirstOrDefault();
+
+		if (selectedFile != null)
+		{
+			child.ProfileImage = selectedFile;
+		}
+	}
+	private void NavBack()
+	{
+		NavigationManager.NavigateTo("/selectuser", replace: true);
+	}
+}

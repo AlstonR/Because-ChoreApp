@@ -1,0 +1,28 @@
+﻿@using Google.Cloud.Firestore
+@inherits LayoutComponentBase
+<div class="start-0 top-0" style="background-color: #A288E3; border-radius: 0; height: 80px; width: 100vw;"></div>
+<div class="vh-100 100-vw p-3 d-flex flex-column justify-content-center align-items-center" style=" overflow:auto; background-color: #A288E3;">
+	<div class="justify-content-start align-items-center position-fixed" style="z-index: 0;">
+		<img src="/images/flowers.jpg" class="position-relative" alt="cloud" style="height: 100vh; width: 110%; object-fit: cover; z-index: 0;">
+	</div>
+
+	<div class="rounded justify-content-center align-items-center " style="z-index: 1; overflow:hidden;  border-radius: 30px;position: fixed; margin-top: 50px;  background-color: beige; width: 325px; height: 650px; margin-bottom: 100px">
+		@Body
+	</div>
+</div>
+<nav class="navbar navbar-sm fixed-bottom" style="background-color: #A288E3; justify-content: space-around; border-radius: 30px; margin-bottom: 10px; margin-left: 10px; margin-right: 10px;">
+	<a class="navbar-brand" href="/ChildChore">
+		<img src="/images/BeeChore.png" alt="chore" style="width: 50px; height: 50px;">
+	</a>
+	<a class="navbar-brand" href="/ChildReward">
+		<img src="/images/BeeShoppingCart2.png" style="width: 50px; height: 50px;" alt="reward">
+	</a>
+</nav>
+
+<style type="text/css" scoped>
+	.logo {
+		height: 80px;
+		width: 120px;
+	}
+</style>
+

@@ -1,0 +1,64 @@
+﻿@page "/signup"
+
+@layout AuthLayout
+
+@inject NavigationManager NavigationManager
+
+@inject AuthService AuthService
+@inject MauiInterop Maui
+
+<EditForm Model="_model" OnValidSubmit="SignupAsync">
+	<DataAnnotationsValidator />
+	<div class="card-body text-center">
+		<div class="vstack text-start">
+			<div class="mb-3">
+				<label class="form-label">Household Name</label>
+				<InputText @bind-Value="_model.HouseHoldName" placeholder="Enter Name" class="form-control rounded-pill fs-6" />
+				<ValidationMessage For="() => _model.HouseHoldName" />
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Email</label>
+				<InputText @bind-Value="_model.Email" placeholder="Enter Email" class="form-control rounded-pill fs-6" />
+				<ValidationMessage For="() => _model.Email" />
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Password</label>
+				<InputText @bind-Value="_model.Password" type="password" placeholder="Enter Password" class="form-control rounded-pill fs-6" />
+				<ValidationMessage For="() => _model.Password" />
+			</div>
+			<button type="submit" class="btn btn-primary rounded-pill" style="background-color: #8BF8FF; color: grey;">Signup</button>
+		</div>
+	</div>
+</EditForm>
+<p class=" text-center  mt-1 mb-1">Already have an account? <NavLink href="/signin" style="color: #8BF8FF;">Sign-in</NavLink></p>
+
+
+@code {
+	private SignupModel _model = new();
+
+	private async Task SignupAsync()
+	{
+		Maui.ShowLoader();
+		try
+		{
+			var result = await AuthService.SignUpAsync(_model);
+			if (result.IsSuccess)
+			{
+				NavigationManager.NavigateTo("/SignupParentForm", replace: true);
+			}
+			else
+			{
+				await Maui.ShowErrorAlertAsync(result.Error ?? "Error in signining up");
+			}
+		}
+		catch (Exception ex)
+		{
+			await Maui.ShowErrorAlertAsync(ex.Message);
+
+		}
+		finally
+		{
+			Maui.HideLoader();
+		}
+	}
+}

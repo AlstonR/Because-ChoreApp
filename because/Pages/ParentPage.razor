@@ -1,0 +1,93 @@
+﻿@page "/ParentPage"
+
+@layout ParentLayout
+
+@inject NavigationManager NavigationManager
+@inject ChildService ChildService
+@inject MauiInterop Maui
+<span class= "centered-text top-0 position-fixed" style="font-family: 'Comic Sans MS'; color: white;  font-size: 25px; left: 50%; margin-top: 20px; transform: translateX(-50%);">Parent Page</span>
+<div class="card-body text-center" >
+	<div class="vstack text-center" >
+		<div>
+			<button type="submit" class="btn btn-primary rounded-pill" style="border-color:#A288E3; background-color: #A288E3; color: beige;  margin-left: 5%; margin-right: 5%; margin-top: 5%; width: 90%;" @onclick="NavToAddReward">
+				<img src="/images/BeeShoppingCart2.png" alt="Image 1" style="width: 70px; height: 70px; margin: 10px;"> Add Reward
+			</button>
+
+			<button type="submit" class="btn btn-primary rounded-pill" style=" border-color:#A288E3; background-color: #A288E3; color: beige;  margin-left: 5%; margin-right: 5%; margin-top: 5%; width: 90%;" @onclick="NavToAssignChore">
+				<img src="/images/BeeChore.png" alt="Image 2" style="width: 70px; height: 70px; margin: 10px;"> Assign Chore
+			</button>
+
+			<button type="submit" class="btn btn-primary rounded-pill" style="border-color:#A288E3; background-color: #A288E3; color: beige;  margin-left: 5%; margin-right: 5%; margin-top: 5%; width: 90%;" @onclick="NavToViewChoreLog">
+				<img src="/images/BeeLog.png" alt="Image 3" style="width: 70px; height: 70px; margin: 10px;"> View Chore Log
+			</button>
+			<button type="submit" class="btn btn-primary rounded-pill" style="border-color:#A288E3; background-color: #A288E3; color: beige;  margin-left: 5%; margin-right: 5%; margin-top: 5%; width: 90%;" @onclick="NavToViewRewardLog">
+				<img src="/images/BeeGettingReward.png" alt="Image 3" style="width: 70px; height: 70px; margin: 10px;"> View Reward Log
+			</button>
+		</div>
+	</div>
+</div>
+
+<button @onclick="() => NavBack()" class="text-left position-fixed top-0 start-0" style="border: none; background: none; cursor: pointer; position: fixed; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+	<img src="/images/bee_back_arrow.png" alt="" style="width: 70px; height: 70px;">
+</button>
+
+@code {
+	private ChildModel child = new();
+
+	private async Task AddChildAsync()
+	{
+		Maui.ShowLoader();
+		try
+		{
+			var result = await ChildService.AddChildAsync(child);
+			if (result.IsSuccess)
+			{
+				NavigationManager.NavigateTo("/selectuser", replace: true);
+			}
+			else
+			{
+				await Maui.ShowErrorAlertAsync(result.Error ?? "Error in signining up");
+			}
+		}
+		catch (Exception ex)
+		{
+			await Maui.ShowErrorAlertAsync(ex.Message);
+
+		}
+		finally
+		{
+			Maui.HideLoader();
+		}
+	}
+
+	private void OnInputFileChange(InputFileChangeEventArgs e)
+	{
+		var files = e.GetMultipleFiles();
+		var selectedFile = files.FirstOrDefault();
+
+		if (selectedFile != null)
+		{
+			child.ProfileImage = selectedFile;
+		}
+	}
+	private void NavToAddReward()
+	{
+		NavigationManager.NavigateTo("/AddReward", replace: true);
+	}
+	private void NavToAssignChore()
+	{
+		NavigationManager.NavigateTo("/AddChore", replace: true);
+	}
+	private void NavToViewChoreLog()
+	{
+		NavigationManager.NavigateTo("/ChoreLogs", replace: true);
+	}
+	private void NavToViewRewardLog()
+	{
+		NavigationManager.NavigateTo("/RewardLogs", replace: true);
+	}
+	private void NavBack()
+	{
+		NavigationManager.NavigateTo("/selectuser", replace: true);
+	}
+}

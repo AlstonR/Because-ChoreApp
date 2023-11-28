@@ -1,0 +1,83 @@
+﻿@page "/ChoreLogs"
+
+@layout ParentLogLayout
+
+@using Google.Cloud.Firestore
+
+@inject NavigationManager NavigationManager
+@inject MauiInterop Maui
+@inject AuthService Auth
+@inject ParentService ParentService
+
+<span class= "centered-text top-0 position-fixed" style="font-family: 'Comic Sans MS'; color: white;  font-size: 25px; left: 50%; margin-top: 20px; transform: translateX(-50%);">Chore Logs</span>
+<div class="position-fixed overflow-auto" style="height: 590px;">
+	@foreach (var chore in ChoreList)
+	{
+		<div class="chore-box" style="background-color: #A288E3; border-radius: 10px; margin: 12px; width: 300px; height: 200px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+			<div style="align-items: center; margin-top: 10px; position: relative; color: black; font-size: 24px;">
+				@chore.AssigneeName: @chore.Name
+			</div>
+			<img src="@chore.ImageString" alt="Chore Image" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-top: 10px;">
+			<div style="align-items: center; margin-top: 10px; margin-bottom: 10px; color: black;">
+				<img src="/images/BeeBucks.png" alt="" style="width: 40px; height: 40px; margin-right: 10px;  margin-top: -5px;">
+				<span style="font-size: 20px; margin-right: 20px;">@chore.Coins</span>
+				<button @onclick="() => ConfirmChoreAsync(chore.Name, chore.AssigneeName, chore.Coins)"
+						style="border-radius: 10px; border-color: black;  background-color: #8BF8FF; color: black; font-size: 16px;">
+					Confirm
+				</button>
+			</div>
+		</div>
+	}
+</div>
+<button @onclick="() => NavBack()" class="text-left position-fixed top-0 start-0" style="border: none; background: none; cursor: pointer; position: fixed; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+	<img src="/images/bee_back_arrow.png" alt="" style="width: 70px; height: 70px;">
+</button>
+
+@code {
+	private string? ProfileImage;
+	private List<ChoreModel> ChoreList = new List<ChoreModel>();
+	private int CurrentCoins;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadData();
+
+	}
+	private async Task LoadData()
+	{
+		CollectionReference collection = AuthService.Database.Collection("Users");
+
+		QuerySnapshot querySnapshot = await collection
+			.WhereEqualTo("Email", AuthService._currentUser.Email)
+			.WhereEqualTo("Name", AuthService._currentUser.Name)
+			.Limit(1)
+			.GetSnapshotAsync();
+
+		if (querySnapshot.Documents.Count > 0)
+		{
+			DocumentSnapshot documentSnapshot = querySnapshot.Documents[0];
+
+			if (documentSnapshot.TryGetValue("ProfilePicture", out object ProfilePicture))
+			{
+				ProfileImage = ProfilePicture?.ToString();
+			}
+			if (documentSnapshot.TryGetValue<int>("Coins", out int coins))
+			{
+				CurrentCoins = coins;
+			}
+		}
+		ChoreList = await ParentService.GetChoreListAsync();
+	}
+
+	private async Task ConfirmChoreAsync(string choreName, string assigneeName, int coinstToAdd)
+	{
+		await ParentService.ChorePayoutAsync(choreName, assigneeName, coinstToAdd);
+		await LoadData();
+		StateHasChanged();
+	}
+	private void NavBack()
+	{
+		NavigationManager.NavigateTo("/ParentPage", replace: true);
+	}
+}
+

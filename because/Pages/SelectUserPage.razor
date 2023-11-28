@@ -1,0 +1,140 @@
+﻿@page "/selectuser"
+
+@layout SelectUser
+
+@using Google.Cloud.Firestore
+
+@inject NavigationManager NavigationManager
+@inject MauiInterop Maui
+@inject AuthService Auth
+@inject HouseHoldService houseHoldService
+
+<div class="position-fixed top-0 start-0">
+	<button @onclick="() => ParentSelected()" class="end-0 top-0" style="border: none; background: none; cursor: pointer; position: fixed; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+		<img src="@ParentProfileImage" alt="" style="width: 80px; height: 80px; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);  margin-right: 8px; margin-top: 10px;">
+	</button>
+	<div class="d-flex flex-column justify-content-center align-items-center position-fixed " style="top: 52%;  left: 50%; z-index: 0;">
+		<button @onclick="AddChild" style="border: none; background: none; cursor: pointer; position: fixed; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+			<img src="/images/Orange_hexagon_outer.png" class="position-fixed" alt="" style="width: 180px; height: 180px;  z-index: 0; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);">
+			<img src="/images/Orange_hexagon_inner.png" class="position-fixed" alt="" style="width: 150px; height: 150px;  z-index: 1; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);">
+			<img src="/images/PlusSignBee.png" class="position-fixed" alt="" style="width: 60px; height: 60px; margin-top: -15px; margin-left: -1px; z-index: 2;">
+			<div class="smallText" style="margin-top: 50px; z-index: 3;">Add Child</div>
+		</button>
+	</div>
+	@{
+		childCount = 0;
+	}
+	@foreach (var kvp in ChildInfoMap)
+	{
+		int layer = 0;
+		int spot = 0;
+		@if ((childCount + 1) % 5 == 1)
+		{
+			layer = ((childCount / 5) * 28) + 66;
+			spot = 33;
+		}
+		else if ((childCount + 1) % 5 == 2)
+		{
+			layer = ((childCount / 5) * 28) + 80;
+			spot = 50;
+		}
+		else if ((childCount + 1) % 5 == 3)
+		{
+			layer = ((childCount / 5) * 28) + 66;
+			spot = 67;
+		}
+		else if ((childCount + 1) % 5 == 4)
+		{
+			layer = ((childCount / 5) * 28) + 80;
+			spot = 16;
+		}
+		else
+		{
+			layer = ((childCount / 5) * 28) + 80;
+			spot = 84;
+		}
+		<div class="d-flex flex-column justify-content-center align-items-center position-fixed" style="top: @(layer)%; left: @spot%; z-index: 0;">
+			<button @onclick="() => ChildSelected(kvp.Key)" style="border: none; background: none; cursor: pointer; position: fixed; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+				<img src="/images/Orange_hexagon_outer.png" class="position-fixed" alt="" style="width: 180px; height: 180px;  z-index: 0; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);">
+				<img src="@kvp.Value" alt="" class="position-fixed" style="width: 110px; height: 120px;  z-index: 1; margin-left: -2px; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);">
+				<div class="smallText" style="margin-top: 50px; z-index: 3;">@kvp.Key</div>
+			</button>
+		</div>
+		childCount++;
+	}
+	<div class="d-flex flex-column justify-content-center align-items-center position-fixed start-0 bigText" style="top: 10%; font-size: 35px; z-index: 3; margin: 15px;">Who's buzzing in today?</div>
+</div>
+
+
+@code {
+	private int childCount = 0;
+	private string? ParentProfileImage;
+	private Dictionary<string, string> ChildInfoMap = new Dictionary<string, string>();
+	private int numberOfChildren;
+	private HouseHold houseHold;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadData();
+
+	}
+	private async Task LoadData()
+	{
+		CollectionReference collection = AuthService.Database.Collection("Users");
+
+		QuerySnapshot querySnapshot = await collection
+			.WhereEqualTo("Email", AuthService._currentUser.Email)
+			.WhereEqualTo("Role", "P")
+			.Limit(1)
+			.GetSnapshotAsync();
+
+		if (querySnapshot.Documents.Count > 0)
+		{
+			DocumentSnapshot documentSnapshot = querySnapshot.Documents[0];
+
+			if (documentSnapshot.TryGetValue("ProfilePicture", out object ProfilePicture))
+			{
+				ParentProfileImage = ProfilePicture?.ToString();
+			}
+		}
+		querySnapshot = await collection
+			.WhereEqualTo("Email", AuthService._currentUser.Email)
+			.WhereEqualTo("Role", "C")
+			.GetSnapshotAsync();
+
+		if (querySnapshot.Documents.Count > 0)
+		{
+			foreach (var document in querySnapshot.Documents)
+			{
+				if (document.TryGetValue("ProfilePicture", out object ProfilePicture) && document.TryGetValue("Name", out object ChildName))
+				{
+					ChildInfoMap.Add(ChildName?.ToString(), ProfilePicture?.ToString());
+				}
+			}
+		}
+	}
+
+
+	private void ParentSelected()
+	{
+
+		AuthService._currentUser.Role = "P";
+		NavigationManager.NavigateTo("/ParentPage", replace: true);
+	}
+	private void ChildSelected(string Name)
+	{
+
+		AuthService._currentUser.Name = Name;
+		AuthService._currentUser.Role = "C";
+
+		NavigationManager.NavigateTo("/ChildChore", replace: true);
+	}
+	private void AddChild()
+	{
+		NavigationManager.NavigateTo("/AddChild", replace: true);
+	}
+	private void NavBack()
+	{
+		NavigationManager.NavigateTo("/signin", replace: true);
+	}
+}
